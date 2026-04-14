@@ -22,7 +22,7 @@ export const handleClaimReward = async (userId, taskNumber) => {
 
     // 1️⃣ Fetch user's wallet info (claimedTasks and firstGen)
     const walletRes = await pool.query(
-      `SELECT "claimedTasks", "earnings" FROM users.wallets WHERE "userId" = $1`,
+      `SELECT "claimedTasks", "earnings", "taskMoney" FROM users.wallets WHERE "userId" = $1`,
       [userId]
     );
 
@@ -34,7 +34,7 @@ export const handleClaimReward = async (userId, taskNumber) => {
       };
     }
 
-    const { claimedTasks, earnings } = walletRes.rows[0];
+    const { claimedTasks, earnings, taskMoney } = walletRes.rows[0];
 
     // 2️⃣ Check if already claimed
     // Assuming sequential claiming: Task 1 must be claimed first, then 2, etc.
@@ -81,16 +81,23 @@ export const handleClaimReward = async (userId, taskNumber) => {
       };
     }
 
-    // 4️⃣ Update wallet (add reward to earnings and increment claimedTasks)
-    await pool.query(
-      `UPDATE users.wallets SET earnings = earnings + $1, "claimedTasks" = $2 WHERE "userId" = $3`,
+    // 4️⃣ Update wallet (add reward to earnings, increment claimedTasks, and update taskMoney)
+    const updateRes = await pool.query(
+      `UPDATE users.wallets 
+       SET earnings = earnings + $1, 
+           "claimedTasks" = $2, 
+           "taskMoney" = "taskMoney" + $1 
+       WHERE "userId" = $3 
+       RETURNING "taskMoney"`,
       [task.reward, taskNumber, userId]
     );
 
     return {
       statusCode: 200,
       message: "Reward claimed successfully",
-      data: null,
+      data: {
+        taskMoney: updateRes.rows[0].taskMoney
+      },
     };
   } catch (error) {
     console.error("Claim Reward Handler Error:", error);

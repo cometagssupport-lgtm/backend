@@ -31,11 +31,12 @@ export const handleTaskManagerScreen = async (userId) => {
 
     // 3️⃣ Fetch current claimedTasks
     const walletRes = await pool.query(
-      `SELECT "claimedTasks" FROM users.wallets WHERE "userId" = $1`,
+      `SELECT "claimedTasks","taskMoney" FROM users.wallets WHERE "userId" = $1`,
       [userId]
     );
 
     const claimedTasks = walletRes.rows.length > 0 ? walletRes.rows[0].claimedTasks : 0;
+    const taskMoney = walletRes.rows.length > 0 ? walletRes.rows[0].taskMoney : 0;
 
     return {
       statusCode: 200,
@@ -43,6 +44,7 @@ export const handleTaskManagerScreen = async (userId) => {
       data: {
         valid: validCount,
         claimedTasks: claimedTasks,
+        taskMoney: taskMoney,
       },
     };
   } catch (error) {

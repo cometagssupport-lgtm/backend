@@ -298,8 +298,8 @@ export const avengersQueries = {
   LIMIT 1;
 `,
   createWalletIfNotExists: `
-    INSERT INTO users.wallets ("userId", deposits, earnings)
-    VALUES ($1, 0, 0)
+    INSERT INTO users.wallets ("userId", deposits, earnings, "taskMoney")
+    VALUES ($1, 0, 0, 0)
     ON CONFLICT ("userId") DO NOTHING;
   `,
 
@@ -355,8 +355,8 @@ export const depositQueries = {
   `,
 
   createWallet: `
-    INSERT INTO users.wallets ("userId", deposits,track_id earnings)
-    VALUES ($1, $2,$3, 0)
+    INSERT INTO users.wallets ("userId", deposits, "track_id", earnings, "taskMoney")
+    VALUES ($1, $2, $3, 0, 0)
     RETURNING *;
   `,
 
