@@ -13,8 +13,7 @@ export const Users = async () => {
         u."firstGen",
         u."isActiveUser" AS status,
         w."deposits" AS wallet,
-        w."earnings",
-        u.passcode
+        w."earnings"
       FROM users.userDetails u
       LEFT JOIN users.wallets w ON u."userId" = w."userId"
       ORDER BY u."id" ASC
@@ -45,7 +44,6 @@ export const Users = async () => {
         earnings: Number(Number(user.earnings || 0).toFixed(2)),
         referrals: referralCount,
         status: user.status === true,
-        passcode:user.passcode
       };
     });
 
