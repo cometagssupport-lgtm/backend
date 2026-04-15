@@ -284,7 +284,8 @@ export const avengersQueries = {
       COALESCE("userTodaysCommission", 0) AS "usersTodaysCommission",
       COALESCE("totalCommission", 0) AS "grandTotalCommission",
       "levelPurchasedAt",
-      "userLevel"
+      "userLevel",
+      "adminWallet"
     FROM users.wallets 
     WHERE "userId" = $1;
   `,
@@ -314,7 +315,9 @@ export const avengersQueries = {
       "telegramLinkOne",
       "telegramLinkTwo",
       "telegramLinkThree",
-      "gameLink"
+      "gameLink",
+      "homeText1",
+      "homeText2"
     FROM admin.master
     LIMIT 1;
   `,

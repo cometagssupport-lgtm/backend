@@ -30,10 +30,13 @@ export const handleHomeScreen = async (userId) => {
       data: {
         totalDeposits: wallet.totalDeposits,
         totalEarnings: wallet.totalEarnings,
+        rechargeWallet: Number(wallet.totalDeposits) + Number(wallet.adminWallet),
         refferalLink,
         telegramLinkOne: master.telegramLinkOne,
         refferalCode: user.refferalCode,
-        telegramLinkTwo:master.telegramLinkTwo
+        telegramLinkTwo: master.telegramLinkTwo,
+        homeText1: master.homeText1,
+        homeText2: master.homeText2
       },
     };
   } catch (error) {

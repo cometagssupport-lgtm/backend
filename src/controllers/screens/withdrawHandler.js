@@ -68,12 +68,21 @@ export const handleWithdrawScreen = async (userId) => {
         ? withdrawResult.rows[0].withdrawAddress
         : "";
 
+    // 🧭 3. Fetch passcode (to check if passkey is set)
+    const userResult = await pool.query(
+      `SELECT passcode FROM users.userDetails WHERE "userId" = $1`,
+      [userId]
+    );
+
+    const passkey = userResult.rows.length > 0 && userResult.rows[0].passcode !== null;
+
     return {
       statusCode: 200,
       message: "success",
       data: {
         totalRemainingBalance,
         withdrawAddress,
+        passkey,
       },
     };
   } catch (error) {

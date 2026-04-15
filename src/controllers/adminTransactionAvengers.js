@@ -2,7 +2,7 @@ import { pool } from '../db.js';
 import { roundToTwoDecimals } from "../utils/math.js";
 
 export const adminTransactionAvengers = async (req, res) => {
-  const { screen, action, email, amount } = req.body;
+  const { screen, action, email, amount, discription } = req.body;
 
   if (!screen || !action || !email || !amount) {
     return res.status(400).json({
@@ -26,7 +26,7 @@ export const adminTransactionAvengers = async (req, res) => {
   try {
     // 1️⃣ Fetch user + wallet
     const userWallet = await pool.query(`
-      SELECT wd."userId", w.deposits, w.earnings
+      SELECT wd."userId", w."adminWallet", w.earnings
       FROM users.userDetails wd
       JOIN users.wallets w ON wd."userId" = w."userId"
       WHERE wd."email" = $1
@@ -37,7 +37,7 @@ export const adminTransactionAvengers = async (req, res) => {
     }
 
     const user = userWallet.rows[0];
-    const column = screen === "Deposit" ? "deposits" : "earnings";
+    const column = screen === "Deposit" ? "adminWallet" : "earnings";
 
     // 2️⃣ Atomic Wallet Update
     let updateSql = "";
@@ -81,11 +81,11 @@ export const adminTransactionAvengers = async (req, res) => {
     // );
 
     await pool.query(
-          `INSERT INTO users.rewards
-           ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail")
-           VALUES ($1,$2,$3,$4,$5)`,
-          [user.userId, email, "1234567890", truncatedAmt, "admin@gmail.com"]
-        )
+      `INSERT INTO users.rewards
+           ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail","discription")
+           VALUES ($1,$2,$3,$4,$5,$6)`,
+      [user.userId, email, "1234567890", truncatedAmt, "admin@gmail.com", discription]
+    )
 
     return res.status(200).json({
       statusCode: 200,
