@@ -5,18 +5,22 @@ export const Users = async () => {
     // 1️⃣ Fetch user details joined with wallet info
     const result = await pool.query(`
       SELECT 
-        u."id",
-        u."userId",
-        u."userName" AS name,
-        u."email",
-        u."refferalCode" AS "referralId",
-        u."firstGen",
-        u."isActiveUser" AS status,
-        w."deposits" AS wallet,
-        w."earnings"
-      FROM users.userDetails u
-      LEFT JOIN users.wallets w ON u."userId" = w."userId"
-      ORDER BY u."id" ASC
+  u."id",
+  u."userId",
+  u."userName" AS name,
+  u."email",
+  u."refferalCode" AS "referralId",
+  u."refferedCode",
+  refUser."email" AS "referredBy",  -- 🔥 NEW FIELD
+  u."firstGen",
+  u."isActiveUser" AS status,
+  w."deposits" AS wallet,
+  w."earnings"
+FROM users.userDetails u
+LEFT JOIN users.wallets w ON u."userId" = w."userId"
+LEFT JOIN users.userDetails refUser 
+  ON refUser."refferalCode" = u."refferedCode"
+ORDER BY u."id" ASC;
     `);
 
     // 2️⃣ Format response data
@@ -40,6 +44,7 @@ export const Users = async () => {
         name: user.name || "N/A",
         email: user.email || "N/A",
         referralId: user.referralId || "N/A",
+        referredBy: user.referredBy || "N/A", // ✅ NEW FIELD
         wallet: Number(Number(user.wallet || 0).toFixed(2)),
         earnings: Number(Number(user.earnings || 0).toFixed(2)),
         referrals: referralCount,

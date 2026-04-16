@@ -63,7 +63,7 @@ export const getTeamsData = async (userId, isAdmin) => {
     // ➤ teamRecharge (exclude free money)
     const teamRecharge = wallets.reduce((acc, w) => {
       let amount = Number(w.deposits || 0);
-      if (w.isFreeMoney) amount -= 8;        // remove free claimed amount
+      // if (w.isFreeMoney) amount -= 8;        // remove free claimed amount
       return acc + (amount > 0 ? amount : 0);
     }, 0);
 

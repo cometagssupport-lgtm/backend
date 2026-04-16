@@ -10,21 +10,20 @@ export const gamesHandler = async (userId) => {
       };
     }
 
-    // Fetch wallet data
-    const walletQuery = `
-      SELECT 
-        "isFreeMoney",
+    // 1️⃣ Fetch wallet
+    const walletRes = await pool.query(
+      `SELECT 
         "userLevel",
         "deposits",
-        "lastActivatedAt"
-      FROM users.wallets 
-      WHERE "userId" = $1
-      LIMIT 1;
-    `;
+        "lastActivatedAt",
+        "freeTrailCount",
+        "freeTrailActivationTime"
+       FROM users.wallets
+       WHERE "userId" = $1`,
+      [userId]
+    );
 
-    const result = await pool.query(walletQuery, [userId]);
-
-    if (result.rows.length === 0) {
+    if (walletRes.rows.length === 0) {
       return {
         statusCode: 404,
         message: "Wallet not found",
@@ -32,40 +31,70 @@ export const gamesHandler = async (userId) => {
       };
     }
 
-    const wallet = result.rows[0];
+    const wallet = walletRes.rows[0];
 
-    // Extract values
-    const isFreeTrailSubcraibed = wallet.isFreeMoney || false;
-    const currectLevel = wallet.userLevel || null;
     const deposits = Number(wallet.deposits || 0);
-    const activationTime = wallet.lastActivatedAt ? Number(wallet.lastActivatedAt) : null;
+    let currectLevel = wallet.userLevel || null;
 
-    // Level ranges
+    const activationTime = wallet.lastActivatedAt
+      ? Number(wallet.lastActivatedAt)
+      : null;
+
+    const freeTrailActivationTime = wallet.freeTrailActivationTime
+      ? Number(wallet.freeTrailActivationTime)
+      : null;
+
+    const freeTrailCount = Number(wallet.freeTrailCount || 0);
+    const isFreeTrailSubcraibed = freeTrailCount < 2;
+
+    // 2️⃣ Level ranges
     const levelRanges = {
-      Level1: { min: 60, max: 500 },
-      Level2: { min: 501, max: 900 },
-      Level3: { min: 901, max: 1500 },
-      Level4: { min: 1501, max: 3000 },
-      Level5: { min: 3001, max: 5000 }
+      Level1: { min: 30, max: 1500 },
+      Level2: { min: 1501, max: 3500 },
+      Level3: { min: 3501, max: 6000 },
+      Level4: { min: 6001, max: 9000 },
     };
 
-    // Determine eligible level
+    const levelOrder = {
+      Level1: 1,
+      Level2: 2,
+      Level3: 3,
+      Level4: 4,
+    };
+
+    // 3️⃣ Find eligible level
     let elegibleLevel = null;
 
     for (const level in levelRanges) {
-      const range = levelRanges[level];
-
-      if (deposits >= range.min) {
-        // If user already has this level, do NOT show eligible level
+      if (deposits >= levelRanges[level].min) {
         elegibleLevel = level;
       }
     }
-    const getData = await pool.query(
+
+    // 4️⃣ 🔥 AUTO UPGRADE LOGIC
+    if (
+      elegibleLevel &&
+      (!currectLevel ||
+        levelOrder[elegibleLevel] > (levelOrder[currectLevel] || 0))
+    ) {
+      await pool.query(
+        `UPDATE users.wallets
+         SET "userLevel" = $1
+         WHERE "userId" = $2`,
+        [elegibleLevel, userId]
+      );
+
+      currectLevel = elegibleLevel; // update response
+    }
+
+    // 5️⃣ Game toggle
+    const masterRes = await pool.query(
       `SELECT "isGameEnabled" FROM admin.master LIMIT 1`
     );
 
-    const isGameEnabled = getData.rows[0]?.isGameEnabled;
+    const isGameEnabled = masterRes.rows[0]?.isGameEnabled || false;
 
+    // ✅ Response
     return {
       statusCode: 200,
       message: "success",
@@ -74,7 +103,8 @@ export const gamesHandler = async (userId) => {
         currectLevel,
         elegibleLevel,
         activationTime,
-        isGameEnabled
+        freeTrailActivationTime,
+        isGameEnabled,
       },
     };
 
