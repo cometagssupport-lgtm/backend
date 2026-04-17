@@ -34,6 +34,7 @@ export const handleHomeScreen = async (userId) => {
         refferalLink,
         telegramLinkOne: master.telegramLinkOne,
         refferalCode: user.refferalCode,
+        UserName: user.userName,
         telegramLinkTwo: master.telegramLinkTwo,
         homeText1: master.homeText1,
         homeText2: master.homeText2
