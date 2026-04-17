@@ -23,8 +23,36 @@ export const activateGame = async (req, res) => {
     }
 
     const wallet = walletRes.rows[0];
-    const purchaseAmount = Number(wallet.deposits || 0);
     const userLevel = wallet.userLevel;
+    // 🆕 Direct invite eligibility check
+    const inviteRules = {
+      Level1: 0,
+      Level2: 3,
+      Level3: 10,
+      Level4: 20,
+    };
+
+    // Fetch firstGen
+    const genRes = await client.query(
+      `SELECT "firstGen" FROM users.userDetails WHERE "userId" = $1`,
+      [userId]
+    );
+
+    const firstGen = genRes.rows[0]?.firstGen || [];
+    const directInvitesCount = firstGen.length;
+
+    // Required invites for this level
+    const requiredInvites = inviteRules[userLevel] ?? 0;
+
+    // ❌ Block activation if not enough invites
+    if (directInvitesCount < requiredInvites) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        statusCode: 400,
+        message: `You need at least ${requiredInvites} direct invites to activate ${userLevel}.`,
+      });
+    }
+    const purchaseAmount = Number(wallet.deposits || 0);
     const lastActivatedAt = wallet.lastActivatedAt ? Number(wallet.lastActivatedAt) : null;
 
     if (!purchaseAmount || !userLevel) {
@@ -46,7 +74,7 @@ export const activateGame = async (req, res) => {
     }
 
     // 3️⃣ Level Commission %
-    const levelRates = { free: 0, Level1: 1.6, Level2: 1.9, Level3: 2.3, Level4: 2.6 };
+    const levelRates = { free: 0, Level1: 1.2, Level2: 1.5, Level3: 1.8, Level4: 2.4 };
     const levelRate = levelRates[userLevel];
     if (levelRate === undefined) {
       await client.query("ROLLBACK");
@@ -72,7 +100,7 @@ export const activateGame = async (req, res) => {
       LIMIT 1;
     `;
 
-    for (let gen = 1; gen <= 3; gen++) {
+    for (let gen = 1; gen <= 5; gen++) {
       if (!currentCode) break;
       const ref = await client.query(getByReferralCode, [currentCode]);
       if (ref.rowCount === 0) break;
@@ -83,7 +111,7 @@ export const activateGame = async (req, res) => {
     }
 
     // 5️⃣ Gen commissions
-    const genPercents = { 1: 6, 2: 5, 3: 4, 4: 3, 5: 2 };
+    const genPercents = { 1: 7, 2: 5, 3: 4, 4: 3, 5: 2 };
     const genBonuses = {};
 
     uplines.forEach(up => {
@@ -120,20 +148,30 @@ export const activateGame = async (req, res) => {
       const bonus = genBonuses[up.gen];
       if (bonus <= 0) continue;
 
-      // Update wallet of upline
+      // 🔥 Map generation → column
+      let genColumn = "";
+      if (up.gen === 1) genColumn = `"firstGenCommission"`;
+      else if (up.gen === 2) genColumn = `"secondGenCommission"`;
+      else if (up.gen === 3) genColumn = `"thirdGenCommission"`;
+      else if (up.gen === 4) genColumn = `"fourthGenCommission"`;
+      else if (up.gen === 5) genColumn = `"fifthGenCommission"`;
+
       const update = await client.query(
         `UPDATE users.wallets
-         SET "earnings" = COALESCE("earnings", 0) + $1,
-              "totalCommission" = COALESCE("totalCommission", 0) + $1
-         WHERE "userId" = $2 RETURNING "userId"`,
+     SET 
+       "earnings" = COALESCE("earnings", 0) + $1,
+       "totalCommission" = COALESCE("totalCommission", 0) + $1,
+       ${genColumn} = COALESCE(${genColumn}, 0) + $1
+     WHERE "userId" = $2
+     RETURNING "userId"`,
         [bonus, up.userId]
       );
 
       if (update.rowCount > 0) {
         await client.query(
           `INSERT INTO users.rewards
-           ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail")
-           VALUES ($1,$2,$3,$4,$5)`,
+       ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail")
+       VALUES ($1,$2,$3,$4,$5)`,
           [up.userId, up.email, userId, bonus, senderEmail]
         );
       }
