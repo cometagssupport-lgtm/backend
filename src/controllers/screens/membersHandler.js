@@ -63,7 +63,8 @@ export const handleMemberScreen = async (userId, screen) => {
         timestamp: m.created_at,
         balance: Number(m.balance || 0),
         inviteCode: count,
-        profilePic: m.profilePic
+        profilePic: m.profilePic,
+        userName: m.userName
       };
     });
 
