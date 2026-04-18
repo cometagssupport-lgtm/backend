@@ -20,6 +20,8 @@ export const handleMemberScreen = async (userId, screen) => {
     if (screen === "genOne") selectedGen = gens.firstGen || [];
     else if (screen === "genTwo") selectedGen = gens.secondGen || [];
     else if (screen === "genThree") selectedGen = gens.thirdGen || [];
+    else if (screen === "genFour") selectedGen = gens.fourthGen || [];
+    else if (screen === "genFive") selectedGen = gens.fifthGen || [];
 
     // 3️⃣ Handle empty generation
     if (!selectedGen || selectedGen.length === 0) {
@@ -60,7 +62,8 @@ export const handleMemberScreen = async (userId, screen) => {
         email: m.email,
         timestamp: m.created_at,
         balance: Number(m.balance || 0),
-        inviteCode : count,
+        inviteCode: count,
+        profilePic: m.profilePic
       };
     });
 

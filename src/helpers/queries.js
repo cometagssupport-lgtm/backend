@@ -171,7 +171,9 @@ RETURNING *;
     SELECT 
       "firstGen",
       "secondGen",
-      "thirdGen"
+      "thirdGen",
+      "fourthGen",
+      "fifthGen"
     FROM users.userDetails
     WHERE "userId" = $1;
   `,
@@ -232,7 +234,7 @@ RETURNING *;
     u.email,
     u."created_at",
     COALESCE(w."deposits", 0) AS balance,
-
+    "profilePic",
     -- direct invited count of this user
     (
       SELECT COUNT(*) 
