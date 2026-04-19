@@ -79,9 +79,10 @@ export const gamesHandler = async (userId) => {
     ) {
       await pool.query(
         `UPDATE users.wallets
-         SET "userLevel" = $1
-         WHERE "userId" = $2`,
-        [elegibleLevel, userId]
+         SET "userLevel" = $1,
+         "lastActivatedAt" = $2
+         WHERE "userId" = $3`,
+        [elegibleLevel, null, userId]
       );
 
       currectLevel = elegibleLevel; // update response
