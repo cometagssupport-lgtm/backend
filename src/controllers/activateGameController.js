@@ -12,7 +12,7 @@ export const activateGame = async (req, res) => {
 
     // 1️⃣ Fetch wallet
     const walletRes = await client.query(
-      `SELECT "deposits","userLevel","lastActivatedAt","userTodaysCommission"
+      `SELECT "deposits","userLevel","lastActivatedAt","userTodaysCommission","adminWallet"
        FROM users.wallets WHERE "userId" = $1 FOR UPDATE`,
       [userId]
     );
@@ -52,7 +52,7 @@ export const activateGame = async (req, res) => {
         message: `You need at least ${requiredInvites} direct invites to activate ${userLevel}.`,
       });
     }
-    const purchaseAmount = Number(wallet.deposits || 0);
+    const purchaseAmount = Number(wallet.deposits || 0) + Number(wallet.adminWallet || 0);
     const lastActivatedAt = wallet.lastActivatedAt ? Number(wallet.lastActivatedAt) : null;
 
     if (!purchaseAmount || !userLevel) {
