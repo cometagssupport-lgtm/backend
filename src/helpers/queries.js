@@ -428,7 +428,8 @@ export const historyQueries = {
     'reward' AS type,
     commission AS amount,
     "createdAt" AS "timestamp",
-    "senderEmail"
+    "senderEmail",
+    "discription"
   FROM users.rewards
   WHERE "receiverUserId" = $1
   ORDER BY "timestamp" DESC;
