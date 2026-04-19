@@ -32,7 +32,7 @@ RETURNING *;
   `,
   //  Get user by email (for login)
   getUserById: `
-    SELECT "userId", email, password, "isActiveUser","userName"
+    SELECT "userId", email, password, "isActiveUser","userName","isVerified"
     FROM users.userDetails
     WHERE "userId" = $1
   `,

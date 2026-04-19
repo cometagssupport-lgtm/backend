@@ -3,20 +3,32 @@ import { pool } from '../db.js';
 import { userQueries } from "../helpers/queries.js";
 
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, userId } = req.body;
 
   // Basic validation
-  if (!email || !password) {
+  if (!password) {
     return res.status(400).json({
       statusCode: 400,
-      message: "failed",
+      message: "Password is required",
+      data: null,
+    });
+  }
+  if (!email && !userId) {
+    return res.status(400).json({
+      statusCode: 400,
+      message: "Either email or userId is required to check user status",
       data: null,
     });
   }
 
   try {
     // 1️⃣ Fetch user from DB
-    const userResult = await pool.query(userQueries.getUserByEmail, [email]);
+    let userResult;
+    if (email) {
+      userResult = await pool.query(userQueries.getUserByEmail, [email]);
+    } else if (userId) {
+      userResult = await pool.query(userQueries.getUserById, [userId]);
+    }
 
     if (userResult.rows.length === 0) {
       return res.status(400).json({
@@ -47,7 +59,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-  // 3️⃣ Check if user is verify
+    // 3️⃣ Check if user is verify
     if (!user.isVerified) {
       return res.status(400).json({
         statusCode: 400,
