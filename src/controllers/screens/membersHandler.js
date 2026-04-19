@@ -55,14 +55,14 @@ export const handleMemberScreen = async (userId, screen) => {
 
     // 5️⃣ Map rows — pick the correct count depending on screen
     const members = memberRes.rows.map((m) => {
-      const count = Number(m.invite_count || 0);
+      // const count = Number(m.invite_count || 0);
 
 
       return {
         email: m.email,
         timestamp: m.created_at,
         balance: Number(m.balance || 0),
-        inviteCode: count,
+        UID: m.userId,
         profilePic: m.profilePic,
         userName: m.userName
       };

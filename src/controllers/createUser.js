@@ -37,18 +37,24 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 3. Generate userId and refferalCode (user's own code)
-    const userId = generateUserId();
+    // const userId = generateUserId();
     const refferalCode = generateReferralCode();
 
     // 4. Insert new user
+    let userId;
+
     if (!isEmailVerify && isEmailVerify !== undefined) {
-      // Provide null for passcode to match userQueries.updateExistingUser (6 parameters)
+      // update existing user → NO userId needed
       const values = [userName, hashedPassword, refferedCode || null, refferalCode, email];
-      const insertRes = await client.query(userQueries.updateExistingUser, values);
+      await client.query(userQueries.updateExistingUser, values);
+
     } else {
-      // Provide null for passcode to match userQueries.insertUser (7 parameters)
+      // new user → generate ID
+      const userIdRes = await client.query(`SELECT nextval('user_id_seq')`);
+      userId = userIdRes.rows[0].nextval;
+
       const values = [userId, userName, email, hashedPassword, refferedCode || null, refferalCode];
-      const insertRes = await client.query(userQueries.insertUser, values);
+      await client.query(userQueries.insertUser, values);
     }
     // get inserted user if needed: insertRes.rows[0]
 
