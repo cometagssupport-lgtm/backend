@@ -13,9 +13,10 @@ import { commissionHandler } from './screens/commissionHandler.js';
 import { profileHandler } from './screens/profileHandler.js';
 import { handleTaskManagerScreen } from './screens/taskManagerHandler.js';
 import { handleClaimReward } from './screens/claimRewardHandler.js';
+import { updateProfileHandler } from './screens/updateProfile.js';
 export const avengersController = async (req, res) => {
   try {
-    const { userId, screen, isAdmin = false, task } = req.body;
+    const { userId, screen, isAdmin = false, task, profile } = req.body;
 
     if (!userId || (!screen && !task)) {
       return res.status(400).json({
@@ -26,7 +27,7 @@ export const avengersController = async (req, res) => {
     }
 
     let response;
-    
+
     // Default to claimReward if task is present but screen is missing
     let effectiveScreen = screen;
     if (!effectiveScreen && task) effectiveScreen = "claimReward";
@@ -65,6 +66,9 @@ export const avengersController = async (req, res) => {
         break;
       case "commission":
         response = await commissionHandler(userId);
+        break;
+      case "updateProfile":
+        response = await updateProfileHandler(userId, profile);
         break;
       case "gameCurrentPlan":
         const userResult = await pool.query(userQueries.getUserLevelById, [userId]);
