@@ -3,7 +3,7 @@ import { pool } from '../db.js';
 import { userQueries } from "../helpers/queries.js";
 
 export const loginUser = async (req, res) => {
-  const { email, password, userId } = req.body;
+  const { email, password, userId, userName } = req.body;
 
   // Basic validation
   if (!password) {
@@ -13,10 +13,10 @@ export const loginUser = async (req, res) => {
       data: null,
     });
   }
-  if (!email && !userId) {
+  if (!email && !userId && !userName) {
     return res.status(400).json({
       statusCode: 400,
-      message: "Either email or userId is required to check user status",
+      message: "Either email or userId or userName is required to login",
       data: null,
     });
   }
@@ -28,6 +28,8 @@ export const loginUser = async (req, res) => {
       userResult = await pool.query(userQueries.getUserByEmail, [email]);
     } else if (userId) {
       userResult = await pool.query(userQueries.getUserById, [userId]);
+    } else if (userName) {
+      userResult = await pool.query(userQueries.getUserByUserName, [userName]);
     }
 
     if (userResult.rows.length === 0) {
@@ -45,7 +47,7 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({
         statusCode: 400,
-        message: "Invalid email or password",
+        message: "Invalid Credentials",
         data: null,
       });
     }

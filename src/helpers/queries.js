@@ -37,6 +37,12 @@ RETURNING *;
     WHERE "userId" = $1
   `,
 
+  getUserByUserName: `
+    SELECT "userId", email, password, "isActiveUser","userName","isVerified"
+    FROM users.userDetails
+    WHERE "userName" = $1
+  `,
+
   getUserByEmail: `
     SELECT "userId", "userName", email, password, "isActiveUser" , "isVerified"
     FROM users.userDetails

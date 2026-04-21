@@ -3,13 +3,13 @@ import { userQueries } from "../helpers/queries.js";
 
 export const checkActiveUser = async (req, res, next) => {
   try {
-    const { email, userId } = req.body;
+    const { email, userId, userName } = req.body;
 
     // 1️⃣ Validate input
-    if (!email && !userId) {
+    if (!email && !userId && !userName) {
       return res.status(400).json({
         statusCode: 400,
-        message: "Either email or userId is required to check user status",
+        message: "Either email or userId or userName is required to check user status",
         data: null,
       });
     }
@@ -21,6 +21,8 @@ export const checkActiveUser = async (req, res, next) => {
       userResult = await pool.query(userQueries.getUserByEmail, [email]);
     } else if (userId) {
       userResult = await pool.query(userQueries.getUserById, [userId]);
+    } else if (userName) {
+      userResult = await pool.query(userQueries.getUserByUserName, [userName]);
     }
 
     // 3️⃣ Handle no user found
