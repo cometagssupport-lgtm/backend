@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 export function generateReferralCode() {
-  return uuidv4().replace(/-/g, "").slice(0, 8).toUpperCase();
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
 }
 
 export function generateUserId() {

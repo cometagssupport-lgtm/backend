@@ -17,7 +17,8 @@ export const gamesHandler = async (userId) => {
         "deposits",
         "lastActivatedAt",
         "freeTrailCount",
-        "freeTrailActivationTime"
+        "freeTrailActivationTime",
+        "adminWallet"
        FROM users.wallets
        WHERE "userId" = $1`,
       [userId]
@@ -33,7 +34,7 @@ export const gamesHandler = async (userId) => {
 
     const wallet = walletRes.rows[0];
 
-    const deposits = Number(wallet.deposits || 0);
+    const deposits = Number(wallet.deposits || 0) + Number(wallet.adminWallet || 0);
     let currectLevel = wallet.userLevel || null;
 
     const activationTime = wallet.lastActivatedAt

@@ -27,10 +27,16 @@ export const registerUser = async (req, res) => {
 
     // 1. Check if user exists
     const existingUser = await client.query(userQueries.checkUserExists, [email]);
+    const existingUserName = await client.query(userQueries.checkUserNameExists, [userName]);
     const isEmailVerify = existingUser?.rows[0]?.isVerified
+    const isUserNameVerify = existingUserName?.rows[0]?.isVerified
     if (existingUser.rows.length > 0 && isEmailVerify) {
       await client.query('ROLLBACK');
       return res.status(400).json({ message: "User already exists." });
+    }
+    if (existingUserName.rows.length > 0 && isUserNameVerify) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: "Username already exists." });
     }
 
     // 2. Hash password

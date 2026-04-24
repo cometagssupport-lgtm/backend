@@ -4,6 +4,9 @@ export const userQueries = {
   checkUserExists: `
     SELECT * FROM users.userDetails WHERE email = $1
   `,
+  checkUserNameExists: `
+    SELECT * FROM users.userDetails WHERE "userName" = $1
+  `,
 
   // Insert new user
   insertUser: `
