@@ -3,7 +3,7 @@ import { pool } from '../db.js';
 import { userQueries } from "../helpers/queries.js";
 
 export const loginUser = async (req, res) => {
-  const { email, password, userId, userName } = req.body;
+  const { user, password } = req.body;
 
   // Basic validation
   if (!password) {
@@ -13,23 +13,29 @@ export const loginUser = async (req, res) => {
       data: null,
     });
   }
-  if (!email && !userId && !userName) {
+  if (!user) {
     return res.status(400).json({
       statusCode: 400,
-      message: "Either email or userId or userName is required to login",
+      message: "userId, email, or username is required to login",
       data: null,
     });
   }
 
   try {
-    // 1️⃣ Fetch user from DB
+    // 1️⃣ Try to find user by userId → email → username (in that order)
     let userResult;
-    if (email) {
-      userResult = await pool.query(userQueries.getUserByEmail, [email]);
-    } else if (userId) {
-      userResult = await pool.query(userQueries.getUserById, [userId]);
-    } else if (userName) {
-      userResult = await pool.query(userQueries.getUserByUserName, [userName]);
+
+    // Try by userId first
+    userResult = await pool.query(userQueries.getUserById, [user]);
+
+    // If not found, try by email
+    if (userResult.rows.length === 0) {
+      userResult = await pool.query(userQueries.getUserByEmail, [user]);
+    }
+
+    // If still not found, try by username
+    if (userResult.rows.length === 0) {
+      userResult = await pool.query(userQueries.getUserByUserName, [user]);
     }
 
     if (userResult.rows.length === 0) {
@@ -40,10 +46,10 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = userResult.rows[0];
+    const foundUser = userResult.rows[0];
 
     // 2️⃣ Compare password using bcrypt
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, foundUser.password);
     if (!isMatch) {
       return res.status(400).json({
         statusCode: 400,
@@ -53,7 +59,7 @@ export const loginUser = async (req, res) => {
     }
 
     // 3️⃣ Check if user is active
-    if (!user.isActiveUser) {
+    if (!foundUser.isActiveUser) {
       return res.status(400).json({
         statusCode: 400,
         message: "Please contact support team",
@@ -61,11 +67,11 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // 3️⃣ Check if user is verify
-    if (!user.isVerified) {
+    // 4️⃣ Check if user account is verified
+    if (!foundUser.isVerified) {
       return res.status(400).json({
         statusCode: 400,
-        message: "Account is not Verified , Please verify your account",
+        message: "Account is not Verified, Please verify your account",
         data: null,
       });
     }
@@ -75,8 +81,8 @@ export const loginUser = async (req, res) => {
       statusCode: 200,
       message: "success",
       data: {
-        userId: user.userId,
-        isActiveUser: user.isActiveUser,
+        userId: foundUser.userId,
+        isActiveUser: foundUser.isActiveUser,
       },
     });
   } catch (error) {

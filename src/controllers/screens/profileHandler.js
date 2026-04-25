@@ -81,6 +81,7 @@ export const profileHandler = async (userId) => {
       data: {
         name: user.userName || "",
         email: user.email || "",
+        avatar: user.profilePic || 1,
         totalDeposits: wallet.totalDeposits || 0,
         totalEarnings: wallet.totalEarnings || 0,
         usersTodaysCommission: wallet.usersTodaysCommission || 0,

@@ -3,29 +3,55 @@ import { userQueries } from "../helpers/queries.js";
 
 export const checkActiveUser = async (req, res, next) => {
   try {
-    const { email, userId, userName } = req.body;
-
-    // 1️⃣ Validate input
-    if (!email && !userId && !userName) {
-      return res.status(400).json({
-        statusCode: 400,
-        message: "Either email or userId or userName is required to check user status",
-        data: null,
-      });
-    }
+    const isLoginRoute = req.path === '/login';
 
     let userResult;
 
-    // 2️⃣ Fetch based on available info
-    if (email) {
-      userResult = await pool.query(userQueries.getUserByEmail, [email]);
-    } else if (userId) {
-      userResult = await pool.query(userQueries.getUserById, [userId]);
-    } else if (userName) {
-      userResult = await pool.query(userQueries.getUserByUserName, [userName]);
+    if (isLoginRoute) {
+      // ── LOGIN ROUTE: single `user` field tried as userId → email → username ──
+      const { user } = req.body;
+
+      if (!user) {
+        return res.status(400).json({
+          statusCode: 400,
+          message: "userId, email, or username is required to login",
+          data: null,
+        });
+      }
+
+      // Try by userId first
+      userResult = await pool.query(userQueries.getUserById, [user]);
+
+      // If not found, try by email
+      if (userResult.rows.length === 0) {
+        userResult = await pool.query(userQueries.getUserByEmail, [user]);
+      }
+
+      // If still not found, try by username
+      if (userResult.rows.length === 0) {
+        userResult = await pool.query(userQueries.getUserByUserName, [user]);
+      }
+
+    } else {
+      // ── ALL OTHER ROUTES: accept only email or userId ──
+      const { email, userId } = req.body;
+
+      if (!email && !userId) {
+        return res.status(400).json({
+          statusCode: 400,
+          message: "Either email or userId is required",
+          data: null,
+        });
+      }
+
+      if (email) {
+        userResult = await pool.query(userQueries.getUserByEmail, [email]);
+      } else {
+        userResult = await pool.query(userQueries.getUserById, [userId]);
+      }
     }
 
-    // 3️⃣ Handle no user found
+    // Handle no user found
     if (!userResult || userResult.rows.length === 0) {
       return res.status(400).json({
         statusCode: 400,
@@ -36,7 +62,7 @@ export const checkActiveUser = async (req, res, next) => {
 
     const user = userResult.rows[0];
 
-    // 4️⃣ Check if active
+    // Check if active
     if (!user.isActiveUser) {
       return res.status(403).json({
         statusCode: 403,
