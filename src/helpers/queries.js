@@ -317,7 +317,7 @@ export const avengersQueries = {
   `,
 
   getUserReferralCode: `
-    SELECT "refferalCode","userName"
+    SELECT "refferalCode","userName","email"
     FROM users.userDetails
     WHERE "userId" = $1;
   `,
