@@ -67,7 +67,7 @@ export const handleClaimReward = async (userId, taskNumber) => {
     let validCount = 0;
     if (firstGen.length > 0) {
       const validRes = await pool.query(
-        `SELECT COUNT(*) FROM users.wallets WHERE "userId" = ANY($1::bigint[]) AND "deposits" >= 30`,
+        `SELECT COUNT(*) FROM users.wallets WHERE "userId" = ANY($1::varchar[]) AND "deposits" >= 30`,
         [firstGen]
       );
       validCount = parseInt(validRes.rows[0].count);

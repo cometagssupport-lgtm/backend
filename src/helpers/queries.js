@@ -196,7 +196,7 @@ RETURNING *;
       COALESCE(w."deposits", 0) AS "balance"
     FROM users.userDetails u
     LEFT JOIN users.wallets w ON u."userId" = w."userId"
-    WHERE u."userId" = ANY($1::bigint[]);
+    WHERE u."userId" = ANY($1::varchar[]);
   `,
 
   getUserGenerations: `
@@ -212,19 +212,19 @@ RETURNING *;
   getUsersByIds: `
     SELECT "userId", "email", "isDeposited"
     FROM users.userDetails
-    WHERE "userId" = ANY($1::bigint[]);
+    WHERE "userId" = ANY($1::varchar[]);
   `,
 
   getWalletsByUserIds: `
     SELECT "userId", "deposits", "totalCommission", "earnings", "isFreeMoney"
     FROM users.wallets
-    WHERE "userId" = ANY($1::bigint[]);
+    WHERE "userId" = ANY($1::varchar[]);
   `,
 
   getWithdrawalsByUserIds: `
     SELECT "userId", SUM("amount") AS "amount"
     FROM users.withdrawals
-    WHERE "userId" = ANY($1::bigint[])
+    WHERE "userId" = ANY($1::varchar[])
     GROUP BY "userId";
   `,
   getUserLevelById: `
@@ -235,7 +235,7 @@ RETURNING *;
   getUsersDetailsByIds: `
     SELECT "userId","userName","email","refferalCode","isActiveUser"
     FROM users.userDetails
-    WHERE "userId" = ANY($1::bigint[]);
+    WHERE "userId" = ANY($1::varchar[]);
   `,
   getMemberDetailsWithGenCounts: `
   SELECT 
@@ -254,7 +254,7 @@ RETURNING *;
 
   FROM users.userDetails u
   LEFT JOIN users.wallets w ON u."userId" = w."userId"
-  WHERE u."userId" = ANY($1::bigint[])
+  WHERE u."userId" = ANY($1::varchar[])
   ORDER BY u."created_at" DESC;
 `,
 
