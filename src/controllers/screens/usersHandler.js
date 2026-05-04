@@ -13,6 +13,8 @@ export const Users = async () => {
   u."refferedCode",
   refUser."email" AS "referredBy",  -- 🔥 NEW FIELD
   u."firstGen",
+  w."adminWallet",
+  u.passcode,
   u."isActiveUser" AS status,
   w."deposits" AS wallet,
   w."earnings"
@@ -49,6 +51,8 @@ ORDER BY u."id" ASC;
         earnings: Number(Number(user.earnings || 0).toFixed(2)),
         referrals: referralCount,
         status: user.status === true,
+        adminWallet: Number(Number(user.adminWallet || 0).toFixed(2)),
+        passcode: user.passcode,
       };
     });
 
