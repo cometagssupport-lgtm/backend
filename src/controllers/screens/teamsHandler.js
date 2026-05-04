@@ -92,7 +92,7 @@ export const getTeamsData = async (userId, isAdmin) => {
         if (!wallet) return acc;
 
         let amount = Number(wallet.deposits || 0);
-        if (wallet.isFreeMoney) amount -= 8;
+        // if (wallet.isFreeMoney) amount -= 8;
 
         return acc + (amount > 0 ? amount : 0);
       }, 0);
