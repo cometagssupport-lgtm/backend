@@ -1,12 +1,12 @@
 import { pool } from "../../db.js";
 
 const TASK_REQUIREMENTS = {
-  1: { count: 5, reward: 20 },
-  2: { count: 15, reward: 30 },
-  3: { count: 30, reward: 60 },
-  4: { count: 40, reward: 100 },
-  5: { count: 60, reward: 160 },
-  6: { count: 80, reward: 360 },
+  1: { count: 5, reward: 30 },
+  2: { count: 15, reward: 100 },
+  3: { count: 30, reward: 180 },
+  4: { count: 40, reward: 260 },
+  5: { count: 60, reward: 360 },
+  6: { count: 80, reward: 660 },
 };
 
 export const handleClaimReward = async (userId, taskNumber) => {

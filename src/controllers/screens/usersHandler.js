@@ -47,11 +47,11 @@ ORDER BY u."id" ASC;
         email: user.email || "N/A",
         referralId: user.referralId || "N/A",
         referredBy: user.referredBy || "N/A", // ✅ NEW FIELD
-        wallet: Number(Number(user.wallet || 0).toFixed(2)),
+        // wallet: Number(Number(user.wallet || 0).toFixed(2)),
         earnings: Number(Number(user.earnings || 0).toFixed(2)),
         referrals: referralCount,
         status: user.status === true,
-        adminWallet: Number(Number(user.adminWallet || 0).toFixed(2)),
+        wallet: Number(Number(user.adminWallet || 0).toFixed(2)),
         passcode: user.passcode,
       };
     });
