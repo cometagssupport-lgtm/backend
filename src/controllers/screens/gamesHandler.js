@@ -71,6 +71,34 @@ export const gamesHandler = async (userId) => {
         elegibleLevel = level;
       }
     }
+    // 🆕 Invite rules
+    const inviteRules = {
+      Level1: 0,
+      Level2: 3,
+      Level3: 10,
+      Level4: 20,
+    };
+
+    // 🆕 Get firstGen count
+    const genRes = await pool.query(
+      `SELECT "firstGen" FROM users.userDetails WHERE "userId" = $1`,
+      [userId]
+    );
+
+    const firstGen = genRes.rows[0]?.firstGen || [];
+    const directInvitesCount = firstGen.length;
+
+    for (const level of ["Level1", "Level2", "Level3", "Level4"]) {
+      const range = levelRanges[level];
+      const requiredInvites = inviteRules[level];
+
+      if (
+        deposits >= range.min &&
+        directInvitesCount >= requiredInvites
+      ) {
+        currectLevel = level;
+      }
+    }
 
     // 4️⃣ 🔥 AUTO UPGRADE LOGIC
     if (
@@ -85,8 +113,6 @@ export const gamesHandler = async (userId) => {
          WHERE "userId" = $3`,
         [elegibleLevel, null, userId]
       );
-
-      currectLevel = elegibleLevel; // update response
     }
 
     // 5️⃣ Game toggle
