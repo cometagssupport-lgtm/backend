@@ -104,7 +104,7 @@ export const gamesHandler = async (userId) => {
     if (
       elegibleLevel &&
       (!currectLevel ||
-        levelOrder[elegibleLevel] > (levelOrder[currectLevel] || 0))
+        levelOrder[currectLevel] <= (levelOrder[elegibleLevel] || 0))
     ) {
       await pool.query(
         `UPDATE users.wallets
