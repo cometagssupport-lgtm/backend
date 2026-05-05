@@ -111,7 +111,7 @@ export const gamesHandler = async (userId) => {
          SET "userLevel" = $1,
          "lastActivatedAt" = $2
          WHERE "userId" = $3`,
-        [elegibleLevel, null, userId]
+        [currectLevel, null, userId]
       );
     }
 
