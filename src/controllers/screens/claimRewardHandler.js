@@ -59,10 +59,11 @@ export const handleClaimReward = async (userId, taskNumber) => {
 
     // 3️⃣ Verify eligibility (valid subordinates count)
     const genResult = await pool.query(
-      `SELECT "firstGen" FROM users.userDetails WHERE "userId" = $1`,
+      `SELECT "firstGen",email FROM users.userDetails WHERE "userId" = $1`,
       [userId]
     );
     const firstGen = genResult.rows[0]?.firstGen || [];
+    const senderEmail = genResult.rows[0]?.email
 
     let validCount = 0;
     if (firstGen.length > 0) {
@@ -91,7 +92,12 @@ export const handleClaimReward = async (userId, taskNumber) => {
        RETURNING "taskMoney"`,
       [task.reward, taskNumber, userId]
     );
-
+    const rewardRes = await pool.query(
+      `INSERT INTO users.rewards
+       ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail","discription")
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [userId, senderEmail, userId, task.reward, senderEmail, "TTR Reward Claimed"]
+    );
     return {
       statusCode: 200,
       message: "Reward claimed successfully",
