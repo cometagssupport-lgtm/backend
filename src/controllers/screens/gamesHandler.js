@@ -34,8 +34,10 @@ export const gamesHandler = async (userId) => {
 
     const wallet = walletRes.rows[0];
 
-    const deposits = Number(wallet.deposits || 0) + Number(wallet.adminWallet || 0);
-    let currectLevel = wallet.userLevel || null;
+    const deposits =
+      Number(wallet.deposits || 0) + Number(wallet.adminWallet || 0);
+
+    let dbLevel = wallet.userLevel || null;
 
     const activationTime = wallet.lastActivatedAt
       ? Number(wallet.lastActivatedAt)
@@ -48,12 +50,21 @@ export const gamesHandler = async (userId) => {
     const freeTrailCount = Number(wallet.freeTrailCount || 0);
     const isFreeTrailSubcraibed = freeTrailCount < 2;
 
-    // 2️⃣ Level ranges
+    // 2️⃣ Level configs
+    const levels = ["Level1", "Level2", "Level3", "Level4"];
+
     const levelRanges = {
-      Level1: { min: 30, max: 1500 },
-      Level2: { min: 1501, max: 3500 },
-      Level3: { min: 3501, max: 6000 },
-      Level4: { min: 6001, max: 9000 },
+      Level1: { min: 30 },
+      Level2: { min: 1501 },
+      Level3: { min: 3501 },
+      Level4: { min: 6001 },
+    };
+
+    const inviteRules = {
+      Level1: 0,
+      Level2: 3,
+      Level3: 10,
+      Level4: 20,
     };
 
     const levelOrder = {
@@ -63,23 +74,16 @@ export const gamesHandler = async (userId) => {
       Level4: 4,
     };
 
-    // 3️⃣ Find eligible level
+    // 3️⃣ Eligible Level (money only)
     let elegibleLevel = null;
 
-    for (const level in levelRanges) {
+    for (const level of levels) {
       if (deposits >= levelRanges[level].min) {
         elegibleLevel = level;
       }
     }
-    // 🆕 Invite rules
-    const inviteRules = {
-      Level1: 0,
-      Level2: 3,
-      Level3: 10,
-      Level4: 20,
-    };
 
-    // 🆕 Get firstGen count
+    // 4️⃣ Get invites
     const genRes = await pool.query(
       `SELECT "firstGen" FROM users.userDetails WHERE "userId" = $1`,
       [userId]
@@ -88,34 +92,35 @@ export const gamesHandler = async (userId) => {
     const firstGen = genRes.rows[0]?.firstGen || [];
     const directInvitesCount = firstGen.length;
 
-    for (const level of ["Level1", "Level2", "Level3", "Level4"]) {
-      const range = levelRanges[level];
-      const requiredInvites = inviteRules[level];
+    // 5️⃣ Calculate correct level (money + invites)
+    let calculatedLevel = null;
 
+    for (const level of levels) {
       if (
-        deposits >= range.min &&
-        directInvitesCount >= requiredInvites
+        deposits >= levelRanges[level].min &&
+        directInvitesCount >= inviteRules[level]
       ) {
-        currectLevel = level;
+        calculatedLevel = level;
       }
     }
 
-    // 4️⃣ 🔥 AUTO UPGRADE LOGIC
+    // 6️⃣ 🔥 Upgrade only (never downgrade)
     if (
-      elegibleLevel &&
-      (!currectLevel ||
-        levelOrder[currectLevel] <= (levelOrder[elegibleLevel] || 0))
+      calculatedLevel &&
+      (!dbLevel ||
+        levelOrder[calculatedLevel] > (levelOrder[dbLevel] || 0))
     ) {
       await pool.query(
         `UPDATE users.wallets
-         SET "userLevel" = $1,
-         "lastActivatedAt" = $2
-         WHERE "userId" = $3`,
-        [currectLevel, null, userId]
+         SET "userLevel" = $1
+         WHERE "userId" = $2`,
+        [calculatedLevel, userId]
       );
+
+      dbLevel = calculatedLevel;
     }
 
-    // 5️⃣ Game toggle
+    // 7️⃣ Game toggle
     const masterRes = await pool.query(
       `SELECT "isGameEnabled" FROM admin.master LIMIT 1`
     );
@@ -128,8 +133,8 @@ export const gamesHandler = async (userId) => {
       message: "success",
       data: {
         isFreeTrailSubcraibed,
-        currectLevel,
-        elegibleLevel,
+        currectLevel: dbLevel,     // ✅ final stored level
+        elegibleLevel,             // ✅ money-based level
         activationTime,
         freeTrailActivationTime,
         isGameEnabled,
