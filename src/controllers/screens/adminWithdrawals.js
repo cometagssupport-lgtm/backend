@@ -15,7 +15,7 @@ export const adminWithdrawals = async () => {
       LEFT JOIN users.userDetails u ON w."userId" = u."userId"
     `);
 
-    // 2️⃣ Apply charge and total calculation (2%)
+    // 2️⃣ Apply charge and total calculation (10%)
     const data = result.rows.map((row) => {
       const amount = Number(row.amount || 0);
       const chargePercent = 10;

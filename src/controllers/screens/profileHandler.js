@@ -74,6 +74,22 @@ export const profileHandler = async (userId) => {
     const master = masterResult.rows[0];
     if (!master) throw new Error("Master data not found");
 
+
+    const genRes = await pool.query(userQueries.getUserGenerations, [userId]);
+    const { firstGen, secondGen, thirdGen, fourthGen, fifthGen } = genRes.rows[0];
+
+    const allGenUserIds = [
+      ...(firstGen || []),
+      ...(secondGen || []),
+      ...(thirdGen || []),
+      ...(fourthGen || []),
+      ...(fifthGen || []),
+    ];
+    const genUsersRes = await pool.query(userQueries.getUsersByIds, [allGenUserIds]);
+    const genUsers = genUsersRes.rows;
+    const validMembers = genUsers.filter(u => u.isDeposited === true).length;
+
+
     // ✅ FINAL RESPONSE
     return {
       statusCode: 200,
@@ -82,13 +98,14 @@ export const profileHandler = async (userId) => {
         name: user.userName || "",
         email: user.email || "",
         avatar: user.profilePic || 1,
-        totalDeposits: wallet.totalDeposits || 0,
-        totalEarnings: wallet.totalEarnings || 0,
-        usersTodaysCommission: wallet.usersTodaysCommission || 0,
-        teamDailyCommission,
+        totalDeposits: wallet.totalDeposits || 0, // 1.Recharge Amount - only user deposited amount needs to be shown.
+        totalEarnings: Number(wallet.totalEarnings || 0) + Number(wallet.adminWallet || 0),// 2.Earnings Balance - Earnings from tasks, daily team commission, bonus collected rewards page , admin manual credits needs to be shown.
+        usersTodaysCommission: wallet.usersTodaysCommission || 0, //4.Todays task Earnings: only needs to shown present day task earnings data
+        teamDailyCommission, // 5.Todays Team income: only needs to shown present day  team commissions user getting 
         grandTotalCommission: wallet.grandTotalCommission || 0,
         flexibleDeposite: wallet.totalDeposits || 0,
-        totalWithdrawals,
+        validMembers: validMembers,
+        totalWithdrawals, // 7.Total Personal Withdrawal: withdrawal user made in total add up every day.
         levelPurchasedAt, // ✅ CORRECT & SAFE
         telegramLinkTwo: master.telegramLinkTwo,
         telegramLinkThree: master.telegramLinkThree,
