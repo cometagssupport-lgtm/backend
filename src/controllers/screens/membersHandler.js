@@ -35,7 +35,7 @@ export const handleMemberScreen = async (userId, screen) => {
     // 4️⃣ Fetch member details AND gen counts in one query
     let memberRes;
     try {
-      memberRes = await pool.query(userQueries.getMemberDetailsWithGenCounts, [selectedGen]);
+      memberRes = await pool.query(userQueries.getMemberDetailsWithGenCounts, [selectedGen, userId]);
     } catch (walletErr) {
       console.error("Fetching member details error:", walletErr);
       return {
@@ -64,7 +64,8 @@ export const handleMemberScreen = async (userId, screen) => {
         balance: Number(m.balance || 0),
         UID: m.userId,
         profilePic: m.profilePic,
-        userName: m.userName
+        userName: m.userName,
+        commission: Number(m.commission || 0),
       };
     });
 

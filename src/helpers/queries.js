@@ -245,18 +245,30 @@ RETURNING *;
     COALESCE(w."deposits", 0) AS balance,
     u."profilePic",
     u."userName",
-    -- direct invited count of this user
-    (
-      SELECT COUNT(*) 
-      FROM users.userDetails x
-      WHERE x."refferedCode" = u."refferalCode"
-    ) AS invite_count
+    -- 🔥 commission earned from this member
+    COALESCE(SUM(r.commission), 0) AS commission
 
   FROM users.userDetails u
-  LEFT JOIN users.wallets w ON u."userId" = w."userId"
+
+  LEFT JOIN users.wallets w 
+    ON u."userId" = w."userId"
+
+  LEFT JOIN users.rewards r 
+    ON r."senderUserId" = u."userId"
+    AND r."receiverUserId" = $2   -- 👈 main userId
+
   WHERE u."userId" = ANY($1::varchar[])
+
+  GROUP BY 
+    u."userId",
+    u.email,
+    u."created_at",
+    w."deposits",
+    u."profilePic",
+    u."userName"
+
   ORDER BY u."created_at" DESC;
-`,
+`
 
 
 
