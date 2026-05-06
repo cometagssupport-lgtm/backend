@@ -122,7 +122,6 @@ export const getTeamsData = async (userId, isAdmin) => {
           totalPromationComission,
           teamRecharge,
           teamWitdrawls,
-          firstLevelBonus,
           genOne: {
             ...genOne,
             commission: firstGenCommission,
@@ -191,6 +190,7 @@ export const getTeamsData = async (userId, isAdmin) => {
         totalDownlines,
         totalPromationComission,
         teamRecharge,
+        firstLevelBonus,
         teamWitdrawls,
         validMembers,
         genOne: {
