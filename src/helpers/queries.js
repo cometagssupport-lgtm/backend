@@ -339,12 +339,16 @@ export const avengersQueries = {
     LIMIT 1;
   `,
   getTeamDailyCommission: `
-    SELECT 
-      COALESCE(SUM(commission), 0) AS "teamDailyCommission"
-    FROM users.rewards
-    WHERE "receiverUserId" = $1
-      AND DATE("createdAt") = CURRENT_DATE;
-  `,
+  SELECT 
+    COALESCE(SUM(commission), 0) AS "teamDailyCommission"
+  FROM users.rewards
+  WHERE "receiverUserId" = $1
+    AND DATE("createdAt") = CURRENT_DATE
+    AND NOT (
+      "senderEmail" = 'admin@gmail.com'
+      OR "senderUserId" = "receiverUserId"
+    );
+`,
 
   //first level bonus is in rewards table if discrption is First Level Bonus
   getFirstLevelBonus: `
