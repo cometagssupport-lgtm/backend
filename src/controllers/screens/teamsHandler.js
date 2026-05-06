@@ -1,5 +1,5 @@
 import { pool } from "../../db.js";
-import { userQueries } from "../../helpers/queries.js";
+import { userQueries, avengersQueries } from "../../helpers/queries.js";
 
 export const getTeamsData = async (userId, isAdmin) => {
   try {
