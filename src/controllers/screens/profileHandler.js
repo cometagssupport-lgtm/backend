@@ -59,6 +59,14 @@ export const profileHandler = async (userId) => {
     const teamDailyCommission =
       teamResult.rows[0]?.teamDailyCommission || 0;
 
+    //getFirstLevelBonus
+    const firstLevelBonusResult = await pool.query(
+      avengersQueries.getFirstLevelBonus,
+      [userId]
+    );
+    const firstLevelBonus =
+      firstLevelBonusResult.rows[0]?.firstLevelBonus || 0;
+
     // 5️⃣ Total withdrawals
     const withdrawalResult = await pool.query(
       avengersQueries.getTotalWithdrawals,
@@ -98,15 +106,15 @@ export const profileHandler = async (userId) => {
         name: user.userName || "",
         email: user.email || "",
         avatar: user.profilePic || 1,
-        totalDeposits: wallet.totalDeposits || 0, // 1.Recharge Amount - only user deposited amount needs to be shown.
-        totalEarnings: Number(wallet.totalEarnings || 0) + Number(wallet.adminWallet || 0),// 2.Earnings Balance - Earnings from tasks, daily team commission, bonus collected rewards page , admin manual credits needs to be shown.
+        Pendingrelease: Number(wallet.totalDeposits || 0), // 1.Recharge Amount - only user deposited amount needs to be shown.
+        Rechargeamount: Number(wallet.totalDeposits || 0) + Number(wallet.adminWallet || 0),// user deposits + admin money
         usersTodaysCommission: wallet.usersTodaysCommission || 0, //4.Todays task Earnings: only needs to shown present day task earnings data
         teamDailyCommission, // 5.Todays Team income: only needs to shown present day  team commissions user getting 
-        grandTotalCommission: wallet.grandTotalCommission || 0,
-        flexibleDeposite: wallet.totalDeposits || 0,
+        Earningbalance: Number(wallet.totalEarnings || 0),
         validMembers: validMembers,
-        totalWithdrawals, // 7.Total Personal Withdrawal: withdrawal user made in total add up every day.
-        levelPurchasedAt, // ✅ CORRECT & SAFE
+        firstLevelBonus,
+        Totalearnings: Number(wallet.totalEarnings || 0) + Number(totalWithdrawals), // 7.Total Personal Withdrawal: withdrawal user made in total add up every day.
+        totalWithdrawals,
         telegramLinkTwo: master.telegramLinkTwo,
         telegramLinkThree: master.telegramLinkThree,
       },

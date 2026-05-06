@@ -66,7 +66,12 @@ export const getTeamsData = async (userId, isAdmin) => {
       // if (w.isFreeMoney) amount -= 8;        // remove free claimed amount
       return acc + (amount > 0 ? amount : 0);
     }, 0);
-
+    const firstLevelBonusResult = await pool.query(
+      avengersQueries.getFirstLevelBonus,
+      [userId]
+    );
+    const firstLevelBonus =
+      firstLevelBonusResult.rows[0]?.firstLevelBonus || 0;
 
     // ➤ teamWithdrawals
     const teamWitdrawls = withdrawals.reduce(
@@ -117,6 +122,7 @@ export const getTeamsData = async (userId, isAdmin) => {
           totalPromationComission,
           teamRecharge,
           teamWitdrawls,
+          firstLevelBonus,
           genOne: {
             ...genOne,
             commission: firstGenCommission,

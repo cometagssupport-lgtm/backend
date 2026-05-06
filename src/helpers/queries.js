@@ -345,6 +345,14 @@ export const avengersQueries = {
     WHERE "receiverUserId" = $1
       AND DATE("createdAt") = CURRENT_DATE;
   `,
+
+  //first level bonus is in rewards table if discrption is First Level Bonus
+  getFirstLevelBonus: `
+  SELECT COALESCE(SUM(commission), 0) AS "firstLevelBonus"
+  FROM users.rewards
+  WHERE "receiverUserId" = $1
+    AND "discription" = 'First Level Bonus';
+  `,
   getTotalWithdrawals: `
   SELECT COALESCE(SUM(amount), 0) AS "totalWithdrawals"
   FROM users.withdrawals
