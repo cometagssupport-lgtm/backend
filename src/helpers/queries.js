@@ -205,7 +205,7 @@ RETURNING *;
     WHERE "userId" = $1;
   `,
   getGenCommissions: `
-    SELECT "firstGenCommission","secondGenCommission","thirdGenCommission","fourthGenCommission","fifthGenCommission"
+    SELECT "totalCommission","firstGenCommission","secondGenCommission","thirdGenCommission","fourthGenCommission","fifthGenCommission"
     FROM users.wallets
     WHERE "userId" = $1;
   `,

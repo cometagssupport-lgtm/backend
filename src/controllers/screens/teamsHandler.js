@@ -9,7 +9,7 @@ export const getTeamsData = async (userId, isAdmin) => {
     if (genRes.rows.length === 0) return { message: "User not found" };
 
     const { firstGen, secondGen, thirdGen, fourthGen, fifthGen, userName } = genRes.rows[0];
-    const { firstGenCommission, secondGenCommission, thirdGenCommission, fourthGenCommission, fifthGenCommission } = genCommissionsRes?.rows[0];
+    const { firstGenCommission, secondGenCommission, thirdGenCommission, fourthGenCommission, fifthGenCommission, totalCommission } = genCommissionsRes?.rows[0];
     const allGenUserIds = [
       ...(firstGen || []),
       ...(secondGen || []),
@@ -55,10 +55,7 @@ export const getTeamsData = async (userId, isAdmin) => {
     const totalDownlines = Number((firstGen || []).length) + Number((secondGen || []).length) + Number((thirdGen || []).length) + Number((fourthGen || []).length) + Number((fifthGen || []).length)
 
     // ➤ Sum commissions safely
-    const totalPromationComission = wallets.reduce(
-      (acc, w) => acc + Number(w.totalCommission || 0),
-      0
-    );
+    const totalPromationComission = Number(totalCommission)
 
     // ➤ teamRecharge (exclude free money)
     const teamRecharge = wallets.reduce((acc, w) => {
