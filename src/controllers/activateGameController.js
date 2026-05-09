@@ -155,9 +155,9 @@ export const activateGame = async (req, res) => {
     // 7️⃣ Insert user’s own commission into rewards table
     await client.query(
       `INSERT INTO users.rewards
-       ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail")
-       VALUES ($1,$2,$3,$4,$5)`,
-      [userId, senderEmail, userId, userShare, senderEmail]
+       ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail","discription")
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [userId, senderEmail, userId, userShare, senderEmail, "AGS Qantization Income"]
     );
 
     // 8️⃣ Distribute generation commissions + insert reward history
@@ -187,9 +187,9 @@ export const activateGame = async (req, res) => {
       if (update.rowCount > 0) {
         await client.query(
           `INSERT INTO users.rewards
-       ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail")
-       VALUES ($1,$2,$3,$4,$5)`,
-          [up.userId, up.email, userId, bonus, senderEmail]
+       ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail","discription")
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+          [up.userId, up.email, userId, bonus, senderEmail, "Daily Team Commission"]
         );
       }
     }
