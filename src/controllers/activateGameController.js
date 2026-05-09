@@ -124,14 +124,31 @@ export const activateGame = async (req, res) => {
     // 6️⃣ Update user wallet (earnings, totalCommission, today's commission)
     const nowTimestamp = Date.now();
 
+    // 🔥 level → timestamp column mapping
+    const levelTimeColumns = {
+      Level1: "firstLevelActivatedTime",
+      Level2: "secondLevelActivatedTime",
+      Level3: "thirdLevelActivatedTime",
+      Level4: "fourthLevelActivatedTime",
+    };
+
+    const levelTimeColumn = levelTimeColumns[userLevel];
+
+    // 🔥 Update query
     await client.query(
-      `UPDATE users.wallets
-       SET 
-         "earnings" = COALESCE("earnings", 0) + $1,
-         "totalCommission" = COALESCE("totalCommission", 0) + $1,
-         "userTodaysCommission" = $1,
-         "lastActivatedAt" = $3
-       WHERE "userId" = $2`,
+      `
+  UPDATE users.wallets
+  SET 
+    "earnings" = COALESCE("earnings", 0) + $1,
+    "totalCommission" = COALESCE("totalCommission", 0) + $1,
+    "userTodaysCommission" = $1,
+    "lastActivatedAt" = $3,
+
+    -- ✅ update only first time
+    "${levelTimeColumn}" = COALESCE("${levelTimeColumn}", $3)
+
+  WHERE "userId" = $2
+  `,
       [userShare, userId, nowTimestamp]
     );
 

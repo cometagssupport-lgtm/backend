@@ -18,7 +18,14 @@ export const gamesHandler = async (userId) => {
         "lastActivatedAt",
         "freeTrailCount",
         "freeTrailActivationTime",
-        "adminWallet"
+        "adminWallet",
+
+        -- 🔥 Level activation timestamps
+        "firstLevelActivatedTime",
+        "secondLevelActivatedTime",
+        "thirdLevelActivatedTime",
+        "fourthLevelActivatedTime"
+
        FROM users.wallets
        WHERE "userId" = $1`,
       [userId]
@@ -48,6 +55,8 @@ export const gamesHandler = async (userId) => {
       : null;
 
     const freeTrailCount = Number(wallet.freeTrailCount || 0);
+
+    // ✅ true means user still has free trials left
     const isFreeTrailSubcraibed = freeTrailCount < 2;
 
     // 2️⃣ Level configs
@@ -74,7 +83,7 @@ export const gamesHandler = async (userId) => {
       Level4: 4,
     };
 
-    // 3️⃣ Eligible Level (money only)
+    // 3️⃣ Eligible level (money only)
     let elegibleLevel = null;
 
     for (const level of levels) {
@@ -83,16 +92,18 @@ export const gamesHandler = async (userId) => {
       }
     }
 
-    // 4️⃣ Get invites
+    // 4️⃣ Get direct invites
     const genRes = await pool.query(
-      `SELECT "firstGen" FROM users.userDetails WHERE "userId" = $1`,
+      `SELECT "firstGen"
+       FROM users.userDetails
+       WHERE "userId" = $1`,
       [userId]
     );
 
     const firstGen = genRes.rows[0]?.firstGen || [];
     const directInvitesCount = firstGen.length;
 
-    // 5️⃣ Calculate correct level (money + invites)
+    // 5️⃣ Calculate current level (money + invites)
     let calculatedLevel = null;
 
     for (const level of levels) {
@@ -104,7 +115,7 @@ export const gamesHandler = async (userId) => {
       }
     }
 
-    // 6️⃣ 🔥 Upgrade only (never downgrade)
+    // 6️⃣ Upgrade only (never downgrade)
     if (
       calculatedLevel &&
       (!dbLevel ||
@@ -120,29 +131,49 @@ export const gamesHandler = async (userId) => {
       dbLevel = calculatedLevel;
     }
 
+    // 🔥 Level → activation timestamp mapping
+    const levelTimeColumns = {
+      Level1: "firstLevelActivatedTime",
+      Level2: "secondLevelActivatedTime",
+      Level3: "thirdLevelActivatedTime",
+      Level4: "fourthLevelActivatedTime",
+    };
+
+    // 🔥 Get current level activation time
+    const levelTimeColumn = levelTimeColumns[dbLevel];
+
+    const GamelevelActivatedTime = levelTimeColumn
+      ? wallet[levelTimeColumn]
+      : null;
+
     // 7️⃣ Game toggle
     const masterRes = await pool.query(
-      `SELECT "isGameEnabled" FROM admin.master LIMIT 1`
+      `SELECT "isGameEnabled"
+       FROM admin.master
+       LIMIT 1`
     );
 
-    const isGameEnabled = masterRes.rows[0]?.isGameEnabled || false;
+    const isGameEnabled =
+      masterRes.rows[0]?.isGameEnabled || false;
 
-    // ✅ Response
+    // ✅ Final Response
     return {
       statusCode: 200,
       message: "success",
       data: {
         isFreeTrailSubcraibed,
-        currectLevel: dbLevel,     // ✅ final stored level
-        elegibleLevel,             // ✅ money-based level
+        currectLevel: dbLevel,
+        elegibleLevel,
         activationTime,
         freeTrailActivationTime,
+        GamelevelActivatedTime, // 🔥 NEW FIELD
         isGameEnabled,
       },
     };
 
   } catch (error) {
     console.error("Games Handler Error:", error);
+
     return {
       statusCode: 500,
       message: "failed",
