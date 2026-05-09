@@ -45,13 +45,13 @@ export const activateGame = async (req, res) => {
     const requiredInvites = inviteRules[userLevel] ?? 0;
 
     // ❌ Block activation if not enough invites
-    // if (directInvitesCount < requiredInvites) {
-    //   await client.query("ROLLBACK");
-    //   return res.status(400).json({
-    //     statusCode: 400,
-    //     message: `You need at least ${requiredInvites} direct invites to activate ${userLevel}.`,
-    //   });
-    // }
+    if (directInvitesCount < requiredInvites) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        statusCode: 400,
+        message: `You need at least ${requiredInvites} direct invites to activate ${userLevel}.`,
+      });
+    }
     const purchaseAmount = Number(wallet.deposits || 0) + Number(wallet.adminWallet || 0);
     const lastActivatedAt = wallet.lastActivatedAt ? Number(wallet.lastActivatedAt) : null;
 
