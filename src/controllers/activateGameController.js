@@ -157,7 +157,7 @@ export const activateGame = async (req, res) => {
       `INSERT INTO users.rewards
        ("receiverUserId","receiverEmail","senderUserId","commission","senderEmail","discription")
        VALUES ($1,$2,$3,$4,$5,$6)`,
-      [userId, senderEmail, userId, userShare, senderEmail, "AGS Qantization Income"]
+      [userId, senderEmail, userId, userShare, senderEmail, "AGS Quantization Income"]
     );
 
     // 8️⃣ Distribute generation commissions + insert reward history
