@@ -165,6 +165,7 @@ export const gamesHandler = async (userId) => {
         currectLevel: dbLevel,
         elegibleLevel,
         activationTime,
+        freeTrailCount,
         freeTrailActivationTime,
         GamelevelActivatedTime, // 🔥 NEW FIELD
         isGameEnabled,
