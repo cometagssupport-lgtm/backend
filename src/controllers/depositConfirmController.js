@@ -39,25 +39,25 @@ export const depositConfirmController = async (req, res) => {
     //     [userId]
     //   );
     // }
-   //Integrate createPayin function here if needed 
-   const payload = {
-       order_id: transactionId,
-       amount: truncatedAmount,
-       to_currency:transactionAccount?.name == "USDT-TRC20" ? "USDT" : transactionAccount?.name == "USDT/USDC(BEP20)" ? 'USDT' : transactionAccount?.name,
-       network: transactionAccount?.accountId || "BSC",
-     };
-    const getResponse =  await createPayin(payload);
+    //Integrate createPayin function here if needed 
+    const payload = {
+      order_id: transactionId,
+      amount: truncatedAmount,
+      to_currency: "USDT",
+      network: transactionAccount?.name == "USDT-TRC20" ? "TRON" : "BSC",
+    };
+    const getResponse = await createPayin(payload);
     if (!getResponse || !getResponse.success) {
       // console.error("💥 Payin Creation Failed:", getResponse?.error || "Something Went wrong");
       await client.query("ROLLBACK");
       return res.status(406).json({
-      statusCode: 406,
-      message: "Payment Transcation Failed",
-      data: null,
-    })
+        statusCode: 406,
+        message: "Payment Transcation Failed",
+        data: null,
+      })
     }
     const track_id = getResponse.data.track_id;
-// 2️⃣ Insert deposit record
+    // 2️⃣ Insert deposit record
     await client.query(depositQueries.insertDeposit, [
       userId,
       truncatedAmount,
@@ -69,11 +69,11 @@ export const depositConfirmController = async (req, res) => {
     // 5️⃣ Create or update wallet
     if (truncatedAmount <= 0) {
       throw new Error("Deposit amount must be greater than zero");
-   }
+    }
 
     if (walletResult.rows.length === 0) {
       // No wallet — create one
-      await client.query(depositQueries.createWallet, [userId, truncatedAmount,track_id]);
+      await client.query(depositQueries.createWallet, [userId, truncatedAmount, track_id]);
     }
 
     await client.query("COMMIT");
