@@ -438,6 +438,7 @@ export const historyQueries = {
         'deposit' AS type,
         amount,
         "timestamp",
+        "transactionAccount",
         "transactionId" AS "transactionId",
         status
       FROM users.deposits
