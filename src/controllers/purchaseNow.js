@@ -54,7 +54,7 @@ export const purchaseNow = async (req, res) => {
         }
       }
 
-      const bonus = roundToTwoDecimals(1);
+      const bonus = roundToTwoDecimals(2);
 
       await pool.query(
         `UPDATE users.wallets
