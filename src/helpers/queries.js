@@ -287,7 +287,28 @@ export const adminQueries = {
     FROM admin.master
     LIMIT 1;
   `,
-  getMaster: `SELECT * FROM admin.master LIMIT 1`,
+  getMaster: `SELECT 
+  "isUnderMaintainance",
+  "maintainanceImageLocation",
+  "bannerLink",
+  "walletNetworks",
+  "created_at",
+  "updated_at",
+  "plans",
+  "gameLink",
+  "planIdFree",
+  "planId1Percent",
+  "planId2Percent",
+  "planId3Percent",
+  "planId4Percent",
+  "telegramLinkOne",
+  "telegramLinkTwo",
+  "telegramLinkThree",
+  "homeText1",
+  "homeText2",
+  "isGameEnabled"
+FROM admin.master 
+LIMIT 1`,
   updateMasterData: (columns) => {
     const setClauses = Object.keys(columns)
       .map((key, index) => `"${key}" = $${index + 1}`)
