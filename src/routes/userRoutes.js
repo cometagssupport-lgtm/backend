@@ -26,7 +26,7 @@ import { adminDeleteUser } from "../controllers/adminDeletUser.js";
 import { convertEarningsToDeposit } from "../controllers/convertEarningsToDeposit.js";
 const router = express.Router();
 
-router.post("/register",checkMaintenance, registerUser);
+router.post("/create-account",checkMaintenance, registerUser);
 router.post("/login",checkMaintenance, checkActiveUser ,loginUser);
 router.post("/forgot-password",checkMaintenance, forgotPassword);
 router.get("/maintenance-check",checkMaintenance, checkMaintenance);
