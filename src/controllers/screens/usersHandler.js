@@ -51,7 +51,7 @@ ORDER BY u."id" ASC;
         earnings: Number(Number(user.earnings || 0).toFixed(2)),
         referrals: referralCount,
         status: user.status === true,
-        wallet: Number(Number(user.adminWallet || 0).toFixed(2)),
+        wallet: Number(Number(user.adminWallet || 0).toFixed(2)) + Number(Number(user.wallet || 0).toFixed(2)),
         passcode: user.passcode,
       };
     });
