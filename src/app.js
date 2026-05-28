@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import userRoutes from './routes/userRoutes.js';
 
 const app = express();
+
+app.use(helmet());
 
 // CORS + Middlewares (same as before)
 const raw = process.env.FRONTEND_URL || '';
