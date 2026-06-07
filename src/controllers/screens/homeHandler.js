@@ -21,7 +21,7 @@ export const handleHomeScreen = async (userId) => {
     if (!master) throw new Error("Master data not found");
 
     // 5️⃣ Build referral link
-    const refferalLink = `${process.env.FRONTEND_URL}/create-account?join=${user.refferalCode}`;
+    const refferalLink = `${process.env.FRONTEND_URL}/c/${user.refferalCode}`;
 
     // ✅ Final response data
     return {
