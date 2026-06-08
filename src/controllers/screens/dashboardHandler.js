@@ -23,8 +23,10 @@ export const Dashboard = async () => {
 
     // 3️⃣ Total Withdraw — sum of all withdrawals
     const totalWithdrawResult = await pool.query(
-      `SELECT COALESCE(SUM("amount"), 0) AS total FROM users.withdrawals`
-    );
+  `SELECT COALESCE(SUM("amount"), 0) AS total
+   FROM users.withdrawals
+   WHERE status != 'pending'`
+);
     const totalWithdraw = Number(totalWithdrawResult.rows[0].total) || 0;
 
     // 4️⃣ Total Users — count of all registered users
