@@ -222,11 +222,14 @@ RETURNING *;
   `,
 
   getWithdrawalsByUserIds: `
-    SELECT "userId", SUM("amount") AS "amount"
-    FROM users.withdrawals
-    WHERE "userId" = ANY($1::varchar[])
-    GROUP BY "userId";
-  `,
+  SELECT 
+    "userId",
+    SUM("amount") AS "amount"
+  FROM users.withdrawals
+  WHERE "userId" = ANY($1::varchar[])
+    AND status != 'pending'
+  GROUP BY "userId";
+`,
   getUserLevelById: `
   SELECT "userLevel"
   FROM users.wallets
