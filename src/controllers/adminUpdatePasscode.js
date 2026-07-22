@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { pool } from "../db.js";
 
 export const adminUpdatePasscode = async (req, res) => {
@@ -26,18 +25,15 @@ export const adminUpdatePasscode = async (req, res) => {
       });
     }
 
-    // 3️⃣ Hash the passcode
-    const hashedPasscode = await bcrypt.hash(passcode, 10);
-
-    // 4️⃣ Update user active status
+    // 3️⃣ Update passcode as plain text
     await pool.query(
       `UPDATE users.userDetails
        SET passcode = $1
        WHERE "email" = $2`,
-      [hashedPasscode, email]
+      [passcode, email]
     );
 
-    // 5️⃣ Send response
+    // 4️⃣ Send response
     return res.status(200).json({
       statusCode: 200,
       message: "Passcode updated Successfully",

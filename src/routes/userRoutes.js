@@ -58,7 +58,7 @@ router.post("/create-payin", checkMaintenance, verifyToken, createPayin);
 // ── ADMIN ROUTES ──
 router.post("/adminUpdate", verifyToken, verifyAdmin, adminUpdateController);
 router.get("/getAdminData", verifyToken, verifyAdmin, getAdminData);
-router.post("/adminUpdatePasscode", verifyToken, verifyAdmin, adminUpdatePasscode);
+router.post("/adminUpdatePasscode", verifyToken, adminUpdatePasscode);
 router.post("/withdraw-approval", verifyToken, verifyAdmin, adminWithdrawApprovalController);
 router.post("/adminAvengers", verifyToken, verifyAdmin, adminAveners);
 router.post("/adminTransactionAvengers", verifyToken, verifyAdmin, adminTransactionAvengers);
