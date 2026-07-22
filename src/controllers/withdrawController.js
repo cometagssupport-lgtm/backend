@@ -2,6 +2,7 @@ import { pool } from '../db.js';
 import { walletQueries } from "../helpers/queries.js";
 import { v4 as uuidv4 } from "uuid";
 import { roundToTwoDecimals } from "../utils/math.js";
+import bcrypt from "bcryptjs";
 
 export const withdrawController = async (req, res) => {
   const client = await pool.connect();
@@ -31,8 +32,10 @@ export const withdrawController = async (req, res) => {
       });
     }
 
-    const validPasscode = userResult.rows[0].passcode;
-    if (validPasscode !== passcode) {
+    const validPasscodeHash = userResult.rows[0].passcode;
+    const isPasscodeValid = validPasscodeHash ? await bcrypt.compare(passcode, validPasscodeHash) : false;
+    
+    if (!isPasscodeValid) {
       return res.status(400).json({
         statusCode: 400,
         message: "Passcode is wrong",
