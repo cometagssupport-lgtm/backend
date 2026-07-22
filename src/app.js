@@ -27,8 +27,11 @@ const corsOptions = {
   credentials: true
 };
 
+import { payloadEncryptionMiddleware } from './middleware/payloadEncryption.js';
+
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(payloadEncryptionMiddleware);
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use('/api', userRoutes);
