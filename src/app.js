@@ -11,7 +11,9 @@ app.use(helmet());
 const raw = process.env.FRONTEND_URL || '';
 const whitelist = raw.split(',').map(s => s.trim()).filter(Boolean);
 
-whitelist.push('http://localhost:4200');
+if (process.env.NODE_ENV !== 'production') {
+  whitelist.push('http://localhost:4200');
+}
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -30,12 +32,5 @@ app.use(express.json());
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use('/api', userRoutes);
-
-// ⭐⭐ THIS PART WAS MISSING ⭐⭐
-const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
 
 export default app;

@@ -1,6 +1,10 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { pool } from '../db.js';
 import { userQueries } from "../helpers/queries.js";
+
+// Admin emails — stored server-side ONLY, never sent to client
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
 
 export const loginUser = async (req, res) => {
   const { user, password } = req.body;
@@ -76,12 +80,29 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // ✅ Success
+    // 5️⃣ Determine role — admin check happens server-side only
+    const role = ADMIN_EMAILS.includes(foundUser.email) ? 'admin' : 'user';
+
+    // 6️⃣ Sign JWT — expires in 7 days
+    const token = jwt.sign(
+      {
+        userId: foundUser.userId,
+        email: foundUser.email,
+        role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // ✅ Success — return token and minimal user info
     return res.status(200).json({
       statusCode: 200,
       message: "success",
       data: {
+        token,
         userId: foundUser.userId,
+        email: foundUser.email,
+        role,
         isActiveUser: foundUser.isActiveUser,
       },
     });
